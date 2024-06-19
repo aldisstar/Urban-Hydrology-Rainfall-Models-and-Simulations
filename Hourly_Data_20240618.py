@@ -1,31 +1,31 @@
 #%%
-#Librerias
+# Lib
 import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import linregress
 
-# Importar datos
+# Import data
 subhourly_data = pd.read_csv("C:/Users/Aldis/Documents/Master Data Science/NYU/Rainfall_Sub_hourly_Data.csv")
 
-# Seleccionar las columnas necesarias
+# Select data
 SubH_Ts = subhourly_data.iloc[:, [0, 11]]
 
-# Renombrar las columnas
+# Rename data
 SubH_Ts.columns = ['Time', 'Precip']
 
-# Convertir la columna 'Time' a un objeto datetime
+# colum Time in datetime
 SubH_Ts['Time'] = pd.to_datetime(SubH_Ts['Time'], format="%Y-%m-%d %H:%M:%S")
+#%%
 
-# Definir la función idf_ddf_intermittency_n
+# Define funcion
 def idf_ddf_intermittency_n(Ts, n_steps):
-    # Rename columns
     Ts.columns = ['Time', 'Precip']
     
     # Compute the number of years
     n_years = len(Ts['Time'].dt.year.unique())
     
-    ## IDF Curves
+    # IDF Curves
     # Create temporary DataFrame for IDF curves
     Ts_temp = Ts.copy()
     Ts_temp['A_Ts_1h'] = Ts_temp['Precip'].rolling(window=1*n_steps, min_periods=1).sum() / (1*n_steps)
@@ -49,12 +49,13 @@ def idf_ddf_intermittency_n(Ts, n_steps):
     
     # Plot IDF curves
     idf_plot = plt.figure(figsize=(10, 6))
-    for col in idf.columns:
-        plt.plot(idf.index, idf[col], marker='o', label=col)
-    plt.xlabel('Time [hours]')
-    plt.ylabel('mm')
+    for duration, col in zip([1, 3, 6, 12, 24], idf.columns):
+        plt.plot(range(1, n_years + 1), idf[col], marker='o', label=f'{duration}h')
+    plt.xlabel('Return Period (Years)')
+    plt.ylabel('Intensity (mm/h)')
     plt.title('Intensity-Duration-Frequency curves')
     plt.legend(title='Duration')
+    plt.xticks(ticks=range(1, n_years + 1))
     plt.grid(True)
     plt.show()
     
@@ -82,12 +83,13 @@ def idf_ddf_intermittency_n(Ts, n_steps):
     
     # Plot DDF curves
     ddf_plot = plt.figure(figsize=(10, 6))
-    for col in ddf.columns:
-        plt.plot(ddf.index, ddf[col], marker='o', label=col)
-    plt.xlabel('Time [hours]')
-    plt.ylabel('mm')
+    for duration, col in zip([1, 3, 6, 12, 24], ddf.columns):
+        plt.plot(range(1, n_years + 1), ddf[col], marker='o', label=f'{duration}h')
+    plt.xlabel('Return Period (Years)')
+    plt.ylabel('Depth (mm)')
     plt.title('Depth-Duration-Frequency curves')
     plt.legend(title='Duration')
+    plt.xticks(ticks=range(1, n_years + 1))
     plt.grid(True)
     plt.show()
     
@@ -108,9 +110,12 @@ def idf_ddf_intermittency_n(Ts, n_steps):
     
     return idf_plot, ddf_plot, dry_freq, n_par
 
-# Ejecutar la función con los datos SubH_Ts y n_steps = 4
+
+# Funcion with SubH_Ts and n_steps = 4
 idf_plot, ddf_plot, dry_freq, n_par = idf_ddf_intermittency_n(SubH_Ts, n_steps=4)
 
-# Mostrar los resultados
+# Print results
 print("Dry Frequency:", dry_freq)
 print("n Parameter:", n_par)
+
+# %%
